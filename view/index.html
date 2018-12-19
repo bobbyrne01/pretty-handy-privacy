@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Pretty Handy Privacy</title>
+
+    <link rel="stylesheet" href="third_party_libs/css/bootstrap.min.css">
+    <link rel="stylesheet" href="third_party_libs/css/all.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+
+    <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+      <header class="masthead mb-auto">
+        <div class="inner">
+          <nav class="nav nav-masthead justify-content-center">
+            <a id="showEncryptView" class="nav-link active" href="#">Encrypt</a>
+            <a id="showDecryptView" class="nav-link" href="#">Decrypt</a>
+            <a id="showLastView" class="nav-link" href="#">Latest</a>
+            <a id="showPrivateKeyView" class="nav-link" href="#">Private Key</a>
+            <a id="showAddressBookView" class="nav-link" href="#">Address Book</a>
+            <a id="showSettingsView" class="nav-link" href="#">Settings</a>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main" class="inner cover">
+        <div id="encryptView">
+          <div id="encryptMessageForm">
+            <form>
+              <div class="form-group">
+                <textarea id="plainText" class="form-control" rows="15" placeholder="Whats up!?"></textarea>
+              </div>
+              <a id="selectRecipients" href="#" class="btn btn-primary disabled">Select recipients</a>
+            </form>
+          </div>
+
+          <div id="encryptForm">
+            <h2 class="cover-heading">Select contact</h2>
+            <table id="recipientsTable" class="table table-sm table-hover">
+              <tbody id="recipients"></tbody>
+            </table>
+            
+            <form>
+              <div class="form-check">
+                <table>
+                  <tr>
+                    <td>
+                      <input class="form-check-input" type="checkbox" id="signMessage">
+                      <label class="form-check-label" for="signMessage">
+                        Sign using private key
+                      </label>
+                    </td>
+                    <td>
+                      <input class="form-control" type="password" id="passphrase" placeholder="Enter passphrase"/>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </form><br/>
+            <table>
+              <tr>
+                <td>
+                  <a id="cancelRecipients" href="#" class="btn btn-secondary">Cancel</a>
+                  <a id="encrypt" href="#" class="btn btn-primary disabled">Encrypt</a>
+                </td>
+                <td>
+                  <div id="signPassphraseError"></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div id="decryptView">  
+          <form>
+            <div class="form-group">
+              <textarea id="cipherText" class="form-control" rows="15" placeholder="-----BEGIN PGP MESSAGE-----&#10;wcFMA3cJENHx...&#10;-----END PGP MESSAGE-----"></textarea>
+            </div>
+            <table>
+              <tr>
+                <td>
+                  <a id="decrypt" href="#" class="btn btn-primary">Decrypt</a>
+                </td>
+                <td>
+                  <input class="form-control" type="password" id="decryptPassphase" placeholder="Enter passphrase"/>
+                </td>
+                <td>
+                  <div id="decryptPassphraseError"></div>
+                </td>
+              </tr>
+            </table>
+          </form>
+        </div>
+
+        <div id="lastView">
+          <div class="form-group">
+            <textarea id="lastText" class="form-control" rows="15" cols="80" readonly></textarea>
+            <button id="copyToClipboard" class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="Copied to clipboard!"><i class="far fa-copy"></i></button>
+          </div>
+        </div>
+
+        <div id="addressBookView">
+            <div class="table-wrapper">
+              <table id="addressBookRecipientsTable" class="table table-sm">
+                <tbody id="addressBookRecipients"></tbody>
+              </table>
+            </div><br/>
+            <a id="loadPublicKey" href="#" class="btn btn-primary">Add public key</a>
+        </div>
+
+        <div id="settingsView">
+          <form>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="copyEncryptedMsgToClipboard" checked>
+              <label class="form-check-label" for="copyEncryptedMsgToClipboard">
+                Copy encrypted message to clipboard
+              </label>
+            </div>
+            <div class="form-group row">
+              <label for="windowWidth" class="col-2 col-form-label">Window width</label>
+              <div class="col-2">
+                <input class="form-control" type="number" value="1000" id="windowWidth">
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="windowHeight" class="col-2 col-form-label">Window height</label>
+              <div class="col-2">
+                <input class="form-control" type="number" value="600" id="windowHeight">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div id="privateKeyView">
+          <div class="table-wrapper">
+            <table id="privateKeysTable" class="table table-sm">
+              <tbody id="privateKeys"></tbody>
+            </table>
+          </div><br/>
+          <a id="loadPrivateKey" href="#" class="btn btn-primary">Add private key</a>
+        </div>
+      </main>
+      <footer class="mastfoot mt-auto">
+        <div class="inner"></div>
+      </footer>
+    </div>
+
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="third_party_libs/js/jquery-3.3.1.slim.min.js"></script>
+    <script src="third_party_libs/js/popper.min.js"></script>
+    <script src="third_party_libs/js/bootstrap.min.js"></script>
+    <script>if (window.module) module = window.module;</script>
+    <script>
+      require('./renderer.js')
+    </script>
+  </body>
+</html>

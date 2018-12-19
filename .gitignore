@@ -1,0 +1,8 @@
+package-lock.json
+yarn.lock
+node_modules
+build/
+dist/
+.DS_Store
+*.log
+trayIcon.png

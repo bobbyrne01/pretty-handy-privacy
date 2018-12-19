@@ -1,0 +1,38 @@
+{
+  "name": "pretty-handy-privacy",
+  "version": "0.1.0",
+  "description": "User interface for basic encryption tasks.",
+  "main": "main.js",
+  "scripts": {
+    "postinstall": "electron-builder install-app-deps",
+    "start": "npm run processImages && electron .",
+    "pack": "npm run processImages && electron-builder --dir",
+    "dist": "npm run processImages && electron-builder",
+    "processImages": "chmod +x tools/processImages.sh && ./tools/processImages.sh"
+  },
+  "build": {
+    "appId": "bobbyrne01.prettyhandyprivacy",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "extendInfo": {
+        "LSUIElement": 1
+      }
+    },
+    "linux": {
+      "category": "Utility"
+    }
+  },
+  "repository": "",
+  "keywords": [],
+  "author": "Robert Byrne",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^3.0.4",
+    "electron-builder": "^20.38.2"
+  },
+  "dependencies": {
+    "electron-store": "^2.0.0",
+    "node-notifier": "^5.3.0",
+    "openpgp": "^4.2.1"
+  }
+}
