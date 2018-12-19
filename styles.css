@@ -6,14 +6,6 @@
     display: inline;
 }
 
-.icon {
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  margin: 0;
-  vertical-align: middle;
-}
-
 .table-wrapper
 {
     width: 100%;
@@ -99,4 +91,22 @@ body {
 
 .mastfoot {
   color: rgba(255, 255, 255, .5);
+}
+
+.carousel-control-prev {
+  margin-left: -30px;
+}
+
+.carousel-control-next {
+  margin-right: -30px;
+}
+
+.carousel-item {
+  height: 500px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.carousel-item img {
+  width: 100%;
 }
