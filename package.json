@@ -19,12 +19,17 @@
       }
     },
     "linux": {
-      "category": "Utility"
+      "category": "Utility",
+      "target": "deb"
     }
   },
   "repository": "",
   "keywords": [],
-  "author": "Robert Byrne",
+  "author": {
+    "name": "Robert Byrne",
+    "email": "bobbyrne01@gmail.com"
+  },
+  "homepage": "https://bobbyrne01.github.io/pretty-handy-privacy/",
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^3.0.4",
