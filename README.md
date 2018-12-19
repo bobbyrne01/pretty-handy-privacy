@@ -2,6 +2,8 @@
 
 Encourage public-key based encryption by providing easy access to basic encryption tasks.
 
+[Application tray menu](https://bobbyrne01.github.io/pretty-handy-privacy/images/tray_context_menu.png)
+
 The application uses [openpgpjs](https://github.com/openpgpjs/openpgpjs), an open source JS implementation of [OpenPGP](https://www.openpgp.org/).
 
 # Features
