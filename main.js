@@ -150,6 +150,43 @@ function createWindow () {
   ]);
   tray.setContextMenu(contextMenu);
 
+  const template = [
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          role: 'undo'
+        },
+        {
+          role: 'redo'
+        },
+        {
+          type: 'separator'
+        },
+        {
+          role: 'cut'
+        },
+        {
+          role: 'copy'
+        },
+        {
+          role: 'paste'
+        },
+        {
+          role: 'pasteandmatchstyle'
+        },
+        {
+          role: 'delete'
+        },
+        {
+          role: 'selectall'
+        }
+      ]
+    }
+  ];
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+
   ipcMain.on(PUBLIC_KEY_SELECTED,function(event, message){
     var absoluteFilePath = message.absoluteFilePath;
     if (fs.existsSync(absoluteFilePath)) {
