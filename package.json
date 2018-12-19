@@ -16,11 +16,32 @@
       "category": "public.app-category.utilities",
       "extendInfo": {
         "LSUIElement": 1
-      }
+      },
+      "target": [
+        {
+          "target": "dmg"
+        },
+        {
+          "target": "pkg"
+        }
+      ]
     },
     "linux": {
       "category": "Utility",
-      "target": "deb"
+      "target": [
+        {
+          "target": "AppImage"
+        },
+        {
+          "target": "deb"
+        },
+        {
+          "target": "rpm"
+        },
+        {
+          "target": "snap"
+        }
+      ]
     }
   },
   "repository": "",
