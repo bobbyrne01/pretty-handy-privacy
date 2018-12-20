@@ -4,6 +4,7 @@ const openpgp = require('openpgp');
 const fs = require('fs');
 const notifier = require('node-notifier');
 const Store = require('electron-store');
+var log = require('electron-log');
 const store = new Store();
 var recipients = store.get('recipients', {});
 var privateKeys = store.get('privateKeys', {});
@@ -187,7 +188,7 @@ function createWindow () {
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
 
-  ipcMain.on(PUBLIC_KEY_SELECTED,function(event, message){
+  ipcMain.on(PUBLIC_KEY_SELECTED,function(event, message) {
     var absoluteFilePath = message.absoluteFilePath;
     if (fs.existsSync(absoluteFilePath)) {
       fs.readFile(absoluteFilePath, 'utf8', function(err, pubkey) {
@@ -197,15 +198,15 @@ function createWindow () {
             userId: userId
           });
         } else {
-          console.log('Error reading: ' + absoluteFilePath);
+          log.error('Error reading public key file at: ' + absoluteFilePath);
         }
       });
     } else {
-      console.log('Not found: ' + absoluteFilePath);
+      log.error('Error, public key not found at: ' + absoluteFilePath);
     }
   });
 
-  ipcMain.on(PRIVATE_KEY_SELECTED,function(event, message){
+  ipcMain.on(PRIVATE_KEY_SELECTED,function(event, message) {
     var absoluteFilePath = message.absoluteFilePath;
     if (fs.existsSync(absoluteFilePath)) {
       fs.readFile(absoluteFilePath, 'utf8', function(err, privkey) {
@@ -215,11 +216,11 @@ function createWindow () {
             userId: userId
           });
         } else {
-          console.log('Error reading: ' + absoluteFilePath);
+          log.error('Error reading private key file at: ' + absoluteFilePath);
         }
       });
     } else {
-      console.log('Not found: ' + absoluteFilePath);
+      log.error('Error, private key not found at: ' + absoluteFilePath);
     }
   });
 
@@ -240,6 +241,7 @@ function createWindow () {
           var asciiArmoredPrivateKey = privateKeys[privateKey].privkey;
           const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
           await privKeyObj.decrypt(message.passphrase).catch(function() {
+            log.warn('Error decrypting private key using passphrase.');
             event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
               statusElementId: 'signPassphraseError'
             });
@@ -267,7 +269,8 @@ function createWindow () {
         });
       })
       .catch(function(error) {
-        console.log(error);
+        log.error('Error encrypting message, full error to follow.');
+        log.error(error);
       });
     }
     encrypt();
@@ -283,6 +286,7 @@ function createWindow () {
       }
       const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
       await privKeyObj.decrypt(decryptPassphase).catch(function() {
+        log.warn('Error decrypting private key using passphrase.');
         event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
           statusElementId: 'decryptPassphraseError'
         });
@@ -301,7 +305,8 @@ function createWindow () {
         });
       })
       .catch(function(error) {
-        console.log(error);
+        log.error('Error decrypting message, full error to follow.');
+        log.error(error);
       });
     }
     decrypt();
