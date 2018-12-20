@@ -216,7 +216,7 @@ ipcRenderer.on('encrypted', (event, message) => {
 ipcRenderer.on('decrypted', (event, message) => {
     document.getElementById('lastText').value = message.message;
     document.getElementById('showLastView').classList.add('active');
-    document.getElementById('showEncryptView').classList.remove('active');
+    document.getElementById('showDecryptView').classList.remove('active');
 
     document.getElementById('lastView').style.display = 'inline';
     document.getElementById('decryptView').style.display = 'none';

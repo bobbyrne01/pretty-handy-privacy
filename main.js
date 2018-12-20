@@ -189,39 +189,11 @@ function createWindow () {
   Menu.setApplicationMenu(menu);
 
   ipcMain.on(PUBLIC_KEY_SELECTED,function(event, message) {
-    var absoluteFilePath = message.absoluteFilePath;
-    if (fs.existsSync(absoluteFilePath)) {
-      fs.readFile(absoluteFilePath, 'utf8', function(err, pubkey) {
-        if (!err) {
-          var userId = storeKey(pubkey, recipients, 'pubkey', 'recipients', store);
-          event.sender.send(PUBLIC_KEY_STORED, {
-            userId: userId
-          });
-        } else {
-          log.error('Error reading public key file at: ' + absoluteFilePath);
-        }
-      });
-    } else {
-      log.error('Error, public key not found at: ' + absoluteFilePath);
-    }
+    processKey(event, message.absoluteFilePath, 'pubkey', 'recipients', PUBLIC_KEY_STORED);
   });
 
   ipcMain.on(PRIVATE_KEY_SELECTED,function(event, message) {
-    var absoluteFilePath = message.absoluteFilePath;
-    if (fs.existsSync(absoluteFilePath)) {
-      fs.readFile(absoluteFilePath, 'utf8', function(err, privkey) {
-        if (!err) {
-          var userId = storeKey(privkey, privateKeys, 'privkey', 'privateKeys', store);
-          event.sender.send(PRIVATE_KEY_STORED, {
-            userId: userId
-          });
-        } else {
-          log.error('Error reading private key file at: ' + absoluteFilePath);
-        }
-      });
-    } else {
-      log.error('Error, private key not found at: ' + absoluteFilePath);
-    }
+    processKey(event, message.absoluteFilePath, 'privkey', 'privateKeys', PRIVATE_KEY_STORED);
   });
 
   ipcMain.on(COPY_TO_CLIPBOARD, function(event, message) {
@@ -233,83 +205,11 @@ function createWindow () {
   });
 
   ipcMain.on(ENCRYPT, function(event, message) {
-    const encrypt = async function() {
-      var plainText = encryptClipboard ? clipboard.readText('selection') : message.plainText;
-      var options = {};
-      if (Object.keys(privateKeys).length !== 0 && message.signMessage) {
-        for (var privateKey in privateKeys) {
-          var asciiArmoredPrivateKey = privateKeys[privateKey].privkey;
-          const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
-          await privKeyObj.decrypt(message.passphrase).catch(function() {
-            log.warn('Error decrypting private key using passphrase.');
-            event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
-              statusElementId: 'signPassphraseError'
-            });
-          });
-          options = {
-            message: openpgp.message.fromText(plainText),
-            publicKeys: (await openpgp.key.readArmored(recipients[message.userId].pubkey)).keys,
-            privateKeys: [privKeyObj]
-          }
-        }
-      } else {
-        options = {
-          message: openpgp.message.fromText(plainText),
-          publicKeys: (await openpgp.key.readArmored(recipients[message.userId].pubkey)).keys
-        }
-      }
-      openpgp.encrypt(options).then(ciphertext => {
-        encrypted = ciphertext.data;
-        return encrypted;
-      })
-      .then(encrypted => {
-        copyToClipboardAndNotify(encrypted);
-        event.sender.send(ENCRYPTED, {
-          asciiArmoredMessage: encrypted
-        });
-      })
-      .catch(function(error) {
-        log.error('Error encrypting message, full error to follow.');
-        log.error(error);
-      });
-    }
-    encrypt();
+    encryptMessage(event, message);
   });
 
-  ipcMain.on(DECRYPT, function(event, details) {
-    const decrypt = async function() {
-      var cipherText = details.cipherText;
-      var decryptPassphase = details.decryptPassphase;
-      var asciiArmoredPrivateKey;
-      for (var privateKey in privateKeys) {
-        asciiArmoredPrivateKey = privateKeys[privateKey].privkey;
-      }
-      const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
-      await privKeyObj.decrypt(decryptPassphase).catch(function() {
-        log.warn('Error decrypting private key using passphrase.');
-        event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
-          statusElementId: 'decryptPassphraseError'
-        });
-      });
-      const options = {
-        message: await openpgp.message.readArmored(cipherText),
-        privateKeys: [privKeyObj]
-      }
-      openpgp.decrypt(options).then(function(plaintext) {
-        return plaintext.data;
-      })
-      .then(function(decrypted) {
-        copyToClipboardAndNotify(decrypted);
-        event.sender.send(DECRYPTED, {
-          message: decrypted
-        });
-      })
-      .catch(function(error) {
-        log.error('Error decrypting message, full error to follow.');
-        log.error(error);
-      });
-    }
-    decrypt();
+  ipcMain.on(DECRYPT, function(event, message) {
+    decryptMessage(event, message);
   });
 }
 
@@ -342,7 +242,7 @@ function resizeWindow(window) {
   window.setSize(windowWidth, windowHeight);
 }
 
-var storeKey = async(key, existingKeys, keyFieldName, preferenceFieldName, store) => {
+var storeKey = async function(key, existingKeys, keyFieldName, preferenceFieldName, store) {
   var parsedKeys = await openpgp.key.readArmored(key);
   var name = parsedKeys.keys[0].users[0].userId.name;
   var email = parsedKeys.keys[0].users[0].userId.email;
@@ -354,4 +254,95 @@ var storeKey = async(key, existingKeys, keyFieldName, preferenceFieldName, store
   existingKeys[userId][keyFieldName] = key;
   store.set(preferenceFieldName, existingKeys);
   return userId;
+}
+
+function processKey(event, absoluteFilePath, keyFieldName, preferenceFieldName, keyStoredEventName) {
+  if (fs.existsSync(absoluteFilePath)) {
+    fs.readFile(absoluteFilePath, 'utf8', function(err, armoredKeyFromFileSystem) {
+      if (!err) {
+        var userId = storeKey(armoredKeyFromFileSystem, privateKeys, keyFieldName, preferenceFieldName, store);
+        event.sender.send(keyStoredEventName, {
+          userId: userId
+        });
+      } else {
+        log.error('Error reading key file at: ' + absoluteFilePath);
+      }
+    });
+  } else {
+    log.error('Error, key not found at: ' + absoluteFilePath);
+  }
+}
+
+var decryptMessage = async function(event, message) {
+  var cipherText = message.cipherText;
+  var decryptPassphase = message.decryptPassphase;
+  var asciiArmoredPrivateKey;
+  for (var privateKey in privateKeys) {
+    asciiArmoredPrivateKey = privateKeys[privateKey].privkey;
+  }
+  const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
+  await privKeyObj.decrypt(decryptPassphase).catch(function() {
+    log.warn('Error decrypting private key using passphrase.');
+    event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
+      statusElementId: 'decryptPassphraseError'
+    });
+  });
+  const options = {
+    message: await openpgp.message.readArmored(cipherText),
+    privateKeys: [privKeyObj]
+  }
+  openpgp.decrypt(options).then(function(plaintext) {
+    return plaintext.data;
+  })
+  .then(function(decrypted) {
+    copyToClipboardAndNotify(decrypted);
+    event.sender.send(DECRYPTED, {
+      message: decrypted
+    });
+  })
+  .catch(function(error) {
+    log.error('Error decrypting message, full error to follow.');
+    log.error(error);
+  });
+}
+
+var encryptMessage = async function(event, message) {
+  var plainText = encryptClipboard ? clipboard.readText('selection') : message.plainText;
+  var options = {};
+  if (Object.keys(privateKeys).length !== 0 && message.signMessage) {
+    for (var privateKey in privateKeys) {
+      var asciiArmoredPrivateKey = privateKeys[privateKey].privkey;
+      const privKeyObj = (await openpgp.key.readArmored(asciiArmoredPrivateKey)).keys[0];
+      await privKeyObj.decrypt(message.passphrase).catch(function() {
+        log.warn('Error decrypting private key using passphrase.');
+        event.sender.send(ERROR_DECRYPTING_PRIVATE_KEY, {
+          statusElementId: 'signPassphraseError'
+        });
+      });
+      options = {
+        message: openpgp.message.fromText(plainText),
+        publicKeys: (await openpgp.key.readArmored(recipients[message.userId].pubkey)).keys,
+        privateKeys: [privKeyObj]
+      }
+    }
+  } else {
+    options = {
+      message: openpgp.message.fromText(plainText),
+      publicKeys: (await openpgp.key.readArmored(recipients[message.userId].pubkey)).keys
+    }
+  }
+  openpgp.encrypt(options).then(ciphertext => {
+    encrypted = ciphertext.data;
+    return encrypted;
+  })
+  .then(encrypted => {
+    copyToClipboardAndNotify(encrypted);
+    event.sender.send(ENCRYPTED, {
+      asciiArmoredMessage: encrypted
+    });
+  })
+  .catch(function(error) {
+    log.error('Error encrypting message, full error to follow.');
+    log.error(error);
+  });
 }
