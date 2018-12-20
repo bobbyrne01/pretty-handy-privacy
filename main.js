@@ -49,7 +49,7 @@ function initWindow() {
 }
 
 function createWindow () {
-  if (process.platform !== 'darwin') {
+  if (process.platform !== 'darwin' && app.dock) {
     app.dock.hide();
   }
   initWindow();

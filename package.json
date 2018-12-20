@@ -1,6 +1,6 @@
 {
   "name": "pretty-handy-privacy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "User interface for basic encryption tasks.",
   "main": "main.js",
   "scripts": {
@@ -8,6 +8,9 @@
     "start": "npm run processImages && electron .",
     "pack": "npm run processImages && electron-builder --dir",
     "dist": "npm run processImages && electron-builder",
+    "distlinux": "npm run processImages && electron-builder -l",
+    "distmac": "npm run processImages && electron-builder -m",
+    "distwin": "npm run processImages && electron-builder -w",
     "processImages": "chmod +x tools/processImages.sh && ./tools/processImages.sh"
   },
   "build": {
