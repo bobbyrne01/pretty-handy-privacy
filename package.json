@@ -7,7 +7,7 @@
     "postinstall": "electron-builder install-app-deps",
     "start": "npm run processImages && electron .",
     "pack": "npm run processImages && electron-builder --dir",
-    "dist": "npm run processImages && electron-builder",
+    "dist": "npm run processImages && electron-builder -lmw",
     "distlinux": "npm run processImages && electron-builder -l",
     "distmac": "npm run processImages && electron-builder -m",
     "distwin": "npm run processImages && electron-builder -w",
