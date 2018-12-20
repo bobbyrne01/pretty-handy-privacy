@@ -54,7 +54,7 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^3.0.4",
-    "electron-builder": "^20.38.2"
+    "electron-builder": "^20.38.4"
   },
   "dependencies": {
     "electron-store": "^2.0.0",
